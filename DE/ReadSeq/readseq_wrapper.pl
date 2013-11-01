@@ -9,7 +9,7 @@ use POSIX qw(ceil);
 use Digest::MD5 qw(md5_hex);
 use Getopt::Long qw(GetOptions);
 
-our $VERSION=1.0;
+our $VERSION=1.1;
 
 my $MAX_LEN=10;
 
@@ -58,6 +58,8 @@ ID\tFormat
 25	ACEDB
 ";
 
+my$DIR='.';
+
 main(@ARGV);
 
 sub main {
@@ -79,6 +81,10 @@ sub main {
 		if($limit ==1){
 			$limit=10;	
 		}	
+			my$dir=`$( cd "$( dirname "$0" )" && pwd )`;
+			if($dir){
+				$DIR=$dir;	
+			}
 	if ( !$format || !@ARGV || !$SUFFIX{$format}) {
 		die "Please provide an input file and a valid output format ID. Accepted formats are $FORMATS\n";
 	}
@@ -113,7 +119,7 @@ sub run {
 
 	my ( $clean_text, $subst_table ) = names2nums( $text_file, $names );
 
-	my $new_form = `echo "$clean_text"| java -cp readseq.jar run -f $format -p`;
+	my $new_form = `echo "$clean_text"| java -cp $DIR/readseq.jar run -f $format -p`;
 
 	my $out_text =
 	  nums2names( $new_form, $subst_table, $clean, $dedup, $limit );
@@ -129,7 +135,7 @@ sub write_out {
 
 sub get_names {
 	my $fn       = shift;
-	my @id_names = `java -cp readseq.jar run -p -l $fn`;
+	my @id_names = `java -cp $DIR/readseq.jar run -p -l $fn`;
 	my @names;
 	for my $name (@id_names) {
 		chomp $name;
