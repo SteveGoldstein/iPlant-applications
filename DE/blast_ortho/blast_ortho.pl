@@ -13,7 +13,7 @@ use FindBin qw($Bin);
 #use Data::Dumper;
 #use JSON qw(from_json to_json);
 
-our $VERSION = qv(0.1.1);
+our $VERSION = qv(0.1.2);
 
 main();
 
@@ -60,7 +60,7 @@ sub init {
 			die "Please provide either an input file or an query string";
 		} 
 		#otherwise write input file as temp
-		my ( $TF, $filename ) = tempfile( UNLINK => 1 );    #
+		my ( $TF, $filename ) = tempfile( UNLINK => 0 );    #
 		print $TF $query;
 		$file = $filename;
 	}
@@ -207,6 +207,6 @@ sub guess_type {
 			return $type;
 		}
 	}
-
+	close $IF;
 	return $type;
 }
