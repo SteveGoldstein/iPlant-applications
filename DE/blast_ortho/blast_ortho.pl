@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local2/perl-5.16.2/bin/perl
 #blast_ortho.pl: Blasts nucleotide or protein sequences against a database of reference Arabidopsis sequences and retrieves the matching files from iRODS
 #Author: Naim Matasci <nmatasci@iplantcollaborative.org>
 
