@@ -13,7 +13,7 @@ use FindBin qw($Bin);
 #use Data::Dumper;
 #use JSON qw(from_json to_json);
 
-our $VERSION = qv(0.1.2);
+our $VERSION = qv(0.1.3);
 
 main();
 
@@ -36,7 +36,7 @@ sub main {
 			next;
 		}
 		mkdir $oid;
-		get_files( $files, $oid, $params->{'format'} );
+		get_files( $files, $oid, $params );
 	}
 
 }
@@ -79,8 +79,8 @@ sub init {
 }
 
 sub get_files {
-	my ( $file_loc, $oid, $formats ) = @_;
-	for my $format ( @{$formats} ) {
+	my ( $file_loc, $oid, $params ) = @_;
+	for my $format ( @{$params->{'format'}} ) {
 		if ( !$file_loc->{$format} ) {
 			warn "Unable to retrieve files for format $format.\n";
 			next;
@@ -88,7 +88,8 @@ sub get_files {
 		my @tn = split /\//, $file_loc->{$format};
 		my $fn = pop @tn;
 		mkdir "$oid/$format";
-		my $cmd = "iget -f " . $file_loc->{$format} . " $oid/$format/$fn";
+		my$exec=$params->{'icommands'}.'/iget';
+		my $cmd = "$exec -f " . $file_loc->{$format} . " $oid/$format/$fn";
 		my $k   = `$cmd`;
 		if ( $k =~ /ERROR/ ) {
 			warn "Unable to retrieve files for "
@@ -99,8 +100,9 @@ sub get_files {
 
 sub query_ids {
 	my ( $hmmid, $params ) = @_;
+	my$exec=$params->{'icommands'}.'/iquest';
 	my $IQUERY_L =
-	  'iquest --no-page "select COLL_NAME, DATA_NAME where DATA_NAME like \'';
+	   $exec.' --no-page "select COLL_NAME, DATA_NAME where DATA_NAME like \'';
 	my $IQUERY_R =
 	  '.%\' AND COLL_NAME like \'' . $params->{'irods_path'} . '%\'"';
 	my %file_loc;
@@ -169,12 +171,12 @@ sub blast {
 	my $blastdb  = $params->{'blastdb_path'};
 	my $nthreads = $params->{'nthreads'};
 	my $blast_exe = $params->{'blast_exe'};
-	my $program  = "$blast_exe/blastp";
+	my $exec  = "$blast_exe/blastp";
 	if ( $params->{'type'} eq 'nuc' ) {
-		$program = "$blast_exe/blastx";
+		$exec = "$blast_exe/blastx";
 	}
 	my $cmd = eval {
-"$program  -db $blastdb -query $file -num_threads $nthreads -outfmt \"6 qseqid sseqid \" -max_target_seqs 1";
+"$exec -db $blastdb -query $file -num_threads $nthreads -outfmt \"6 qseqid sseqid \" -max_target_seqs 1";
 	};
 	my $blout = `$cmd`;    #System call to blast. The result is stored in $blout
 	if ( !$blout ) {
