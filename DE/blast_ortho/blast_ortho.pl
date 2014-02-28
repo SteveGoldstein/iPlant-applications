@@ -13,7 +13,7 @@ use FindBin qw($Bin);
 #use Data::Dumper;
 #use JSON qw(from_json to_json);
 
-our $VERSION = qv(0.1.3);
+our $VERSION = qv(0.1.4);
 
 main();
 
@@ -89,7 +89,8 @@ sub get_files {
 		my $fn = pop @tn;
 		mkdir "$oid/$format";
 		my$exec=$params->{'icommands'}.'/iget';
-		my $cmd = "$exec -f " . $file_loc->{$format} . " $oid/$format/$fn";
+		my$vare= 'export irodsEnvFile='.$params->{'irods_env'};
+		my $cmd = "$vare; $exec -f " . $file_loc->{$format} . " $oid/$format/$fn";
 		my $k   = `$cmd`;
 		if ( $k =~ /ERROR/ ) {
 			warn "Unable to retrieve files for "
@@ -101,13 +102,14 @@ sub get_files {
 sub query_ids {
 	my ( $hmmid, $params ) = @_;
 	my$exec=$params->{'icommands'}.'/iquest';
+	my$vare= 'export irodsEnvFile='.$params->{'irods_env'};
 	my $IQUERY_L =
 	   $exec.' --no-page "select COLL_NAME, DATA_NAME where DATA_NAME like \'';
 	my $IQUERY_R =
 	  '.%\' AND COLL_NAME like \'' . $params->{'irods_path'} . '%\'"';
 	my %file_loc;
 	$file_loc{'id'} = $hmmid;
-	my $k = $IQUERY_L . $hmmid . $IQUERY_R;
+	my $k = "$vare; ".$IQUERY_L . $hmmid . $IQUERY_R;
 	my $r = `$k`;
 	if ( !$r || $r =~ /CAT_NO_ROWS_FOUND/ ) {
 		warn "Files for HMMID $hmmid could not be found:\n$r\n";
