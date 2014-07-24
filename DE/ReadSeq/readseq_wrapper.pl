@@ -1,4 +1,4 @@
-#!/bin/env perl
+#!/usr/bin/perl
 #readseq_wrapper.pl: wrapper for iubio's Readseq: http://iubio.bio.indiana.edu/soft/molbio/readseq/java/
 #usage: readseq_wrapper.pl -f[ormat] <format_id> [-noclean -nodedup -l[imit] <name_length>] [-o[ut] <output_name>] <input_file> [<input_files>...]
 #
@@ -9,7 +9,7 @@ use POSIX qw(ceil);
 use Digest::MD5 qw(md5_hex);
 use Getopt::Long qw(GetOptions);
 
-our $VERSION=1.1;
+our $VERSION=1.2;
 
 my $MAX_LEN=10;
 
@@ -81,8 +81,10 @@ sub main {
 		if($limit ==1){
 			$limit=10;	
 		}	
-			my$dir=`$( cd "$( dirname "$0" )" && pwd )`;
+			my$c='cd "$( dirname "$0" )" && pwd';
+			my$dir=`$c`;
 			if($dir){
+				chomp $dir;
 				$DIR=$dir;	
 			}
 	if ( !$format || !@ARGV || !$SUFFIX{$format}) {
@@ -118,8 +120,10 @@ sub run {
 	my $names = get_names($inf);
 
 	my ( $clean_text, $subst_table ) = names2nums( $text_file, $names );
+	
+	my $c = "echo \"$clean_text\"|java -cp \"$DIR/readseq.jar\" run -f $format -p";
+	my $new_form = `$c`;
 
-	my $new_form = `echo "$clean_text"| java -cp $DIR/readseq.jar run -f $format -p`;
 
 	my $out_text =
 	  nums2names( $new_form, $subst_table, $clean, $dedup, $limit );
@@ -135,7 +139,9 @@ sub write_out {
 
 sub get_names {
 	my $fn       = shift;
-	my @id_names = `java -cp $DIR/readseq.jar run -p -l $fn`;
+	my$c="java -cp \"$DIR/readseq.jar\" run -p -l \"$fn\"";
+	my @id_names = `$c`;
+	print join "",@id_names;
 	my @names;
 	for my $name (@id_names) {
 		chomp $name;
