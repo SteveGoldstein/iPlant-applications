@@ -9,33 +9,33 @@ use POSIX qw(ceil);
 use Digest::MD5 qw(md5_hex);
 use Getopt::Long qw(GetOptions);
 
-our $VERSION=1.2;
+our $VERSION = 1.2;
 
-my $MAX_LEN=10;
+my $MAX_LEN = 10;
 
 my %SUFFIX = (
 	1  => '.ig',
-	2    => '.gb',
-	3    => '.nbrf',
-	4    => '.embl',
-	5    => '.gcg',
-	6    => '.strider',
-	8    => '.fas',
-	11   => '.phylip2',
-	12   => '.phylip',
-	13   => '.seq',
-	14   => '.pir',
-	15   => '.msf',
-	17   => '.nexus',
-	18   => '.pretty',
-	19   => '.xml',
-	22   => '.aln',
-	23   => '.fff',
-	24   => '.gff',
+	2  => '.gb',
+	3  => '.nbrf',
+	4  => '.embl',
+	5  => '.gcg',
+	6  => '.strider',
+	8  => '.fas',
+	11 => '.phylip2',
+	12 => '.phylip',
+	13 => '.seq',
+	14 => '.pir',
+	15 => '.msf',
+	17 => '.nexus',
+	18 => '.pretty',
+	19 => '.xml',
+	22 => '.aln',
+	23 => '.fff',
+	24 => '.gff',
 	25 => '.ace'
 );
 
-my$FORMATS="
+my $FORMATS = "
 ID\tFormat
 1	IG|Stanford
 2	GenBank|gb
@@ -58,37 +58,38 @@ ID\tFormat
 25	ACEDB
 ";
 
-my$DIR='.';
+my $DIR = '.';
 
 main(@ARGV);
 
 sub main {
 	my $inf;
-	my$out;
-	my$format;
-	my $clean=1;
-	my$dedup=1;
-	my$limit=0;
-	
+	my $out;
+	my $format;
+	my $clean = 1;
+	my $dedup = 1;
+	my $limit = 0;
+
 	GetOptions(
 		"format=i" => \$format,
 		"out=s"    => \$out,
-		"clean!"    => \$clean,
-		"dedup!"    => \$dedup,
-		"limit:i"   => \$limit
+		"clean!"   => \$clean,
+		"dedup!"   => \$dedup,
+		"limit:i"  => \$limit
 	);
-		print "Running on ",join "\t",@ARGV;
-		if($limit ==1){
-			$limit=10;	
-		}	
-			my$c='cd "$( dirname "$0" )" && pwd';
-			my$dir=`$c`;
-			if($dir){
-				chomp $dir;
-				$DIR=$dir;	
-			}
-	if ( !$format || !@ARGV || !$SUFFIX{$format}) {
-		die "Please provide an input file and a valid output format ID. Accepted formats are $FORMATS\n";
+	print "Running on ", join "\t", @ARGV;
+	if ( $limit == 1 ) {
+		$limit = 10;
+	}
+	my $c   = 'cd "$( dirname "$0" )" && pwd';
+	my $dir = `$c`;
+	if ($dir) {
+		chomp $dir;
+		$DIR = $dir;
+	}
+	if ( !$format || !@ARGV || !$SUFFIX{$format} ) {
+		die
+"Please provide an input file and a valid output format ID. Accepted formats are $FORMATS\n";
 	}
 	elsif ( @ARGV == 1 ) {
 		if ( !$out ) {
@@ -103,9 +104,8 @@ sub main {
 "Option -o not valid with multiple files. Output files will be named after input name.";
 		}
 		for my $inf (@ARGV) {
-			my $text = run( $inf,
-				$format, $clean, $dedup, $limit );
-				write_out($text,$inf . $SUFFIX{$format});
+			my $text = run( $inf, $format, $clean, $dedup, $limit );
+			write_out( $text, $inf . $SUFFIX{$format} );
 		}
 	}
 }
@@ -120,10 +120,10 @@ sub run {
 	my $names = get_names($inf);
 
 	my ( $clean_text, $subst_table ) = names2nums( $text_file, $names );
-	
-	my $c = "echo \"$clean_text\"|java -cp \"$DIR/readseq.jar\" run -f $format -p";
-	my $new_form = `$c`;
 
+	my $c =
+	  "echo \"$clean_text\"|java -cp \"$DIR/readseq.jar\" run -f $format -p";
+	my $new_form = `$c`;
 
 	my $out_text =
 	  nums2names( $new_form, $subst_table, $clean, $dedup, $limit );
@@ -139,9 +139,9 @@ sub write_out {
 
 sub get_names {
 	my $fn       = shift;
-	my$c="java -cp \"$DIR/readseq.jar\" run -p -l \"$fn\"";
+	my $c        = "java -cp \"$DIR/readseq.jar\" run -p -l \"$fn\"";
 	my @id_names = `$c`;
-	print join "",@id_names;
+	print join "", @id_names;
 	my @names;
 	for my $name (@id_names) {
 		chomp $name;
@@ -238,11 +238,11 @@ sub scrub_names {
 }
 
 sub names2nums {
-	my ( $text_file, $names,$max_len ) = @_;
+	my ( $text_file, $names, $max_len ) = @_;
 	my $n_names = scalar( @{$names} );
 	my $post    = sig_n($n_names);
-	if(!$max_len){
-		$max_len=$MAX_LEN;	
+	if ( !$max_len ) {
+		$max_len = $MAX_LEN;
 	}
 	my $pre = $max_len - ( 1 + $post );
 
